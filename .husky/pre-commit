@@ -1,1 +1,9 @@
-npm test
+# Husky v9+ (sin shebang, sin husky.sh)
+# (opcional) fuerza Node 20 si tienes nvm
+[ -s "$HOME/.nvm/nvm.sh" ] && . "$HOME/.nvm/nvm.sh" && nvm use 20 >/dev/null 2>&1
+
+# asegúrate de estar en la raíz del repo
+cd "$(git rev-parse --show-toplevel)"
+
+# corre lint-staged (o tu comando)
+npm exec -- lint-staged

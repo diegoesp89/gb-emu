@@ -31,7 +31,7 @@ Emulador de **Game Boy (DMG)** hecho en **TypeScript**, renderizado en **Canvas 
 
 ## ✅ Flujo de trabajo con TDD (recomendado)
 
-Aplica **TDD primero** a lo determinístico: CPU, MMU y Timers. PPU/APU pueden ir después o con tests de mayor grano.
+Aplicar **TDD primero** a lo determinístico: CPU, MMU y Timers. PPU/APU pueden ir después o con tests de mayor grano.
 
 **Primeros pasos TDD**
 
@@ -81,7 +81,7 @@ Aplica **TDD primero** a lo determinístico: CPU, MMU y Timers. PPU/APU pueden i
 
 ## 🛠️ Comandos `window.gb` (API de consola)
 
-> Solo la **superficie** (la lógica la implementas tú):
+> Solo la **superficie**:
 
 - `gb.loadROM(file | Uint8Array)`
 - `gb.reset()`

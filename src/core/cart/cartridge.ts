@@ -5,6 +5,7 @@ const MAX_ADDR = 0xffff; // 16-bit address space
 const MAX_ROM_SIZE = 0x8000; // 32KB for Game
 const ERAM_START = 0xa000;
 const ERAM_END = 0xbfff;
+const MINIMUM_ROM_SIZE = 0x150; // 16 bytes minimum for a valid ROM
 
 /**
  * Cartridge class to handle Game
@@ -17,7 +18,7 @@ class Cartridge {
   addressable: number;
 
   constructor(buffer: ArrayBuffer) {
-    if (buffer.byteLength < 16) {
+    if (buffer.byteLength < MINIMUM_ROM_SIZE) {
       throw new RangeError('ROM must be at least 16 bytes');
     }
     this.rom = new Uint8Array(buffer);

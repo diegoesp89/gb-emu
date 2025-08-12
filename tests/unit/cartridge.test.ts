@@ -29,7 +29,7 @@ describe('Cartridge', () => {
   });
 
   it('should throw an error for ROMS smaller than 16 bytes', () => {
-    const buffer = makeBuffer(15);
+    const buffer = makeBuffer(0x100);
     expect(() => new Cartridge(buffer)).toThrow(RangeError);
   });
 
@@ -57,5 +57,7 @@ describe('Cartridge', () => {
     expect(() => cartridge.dispose()).not.toThrow();
     expect(cartridge.rom).toBeDefined();
     expect(cartridge.addressable).toBeDefined();
+    expect(() => cartridge.readAbs(0x0000)).toThrow(RangeError);
+    expect(cartridge.getRomSize()).toBe(0);
   });
 });

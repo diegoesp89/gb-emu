@@ -1,11 +1,10 @@
-
 const ROM_START = 0x0000;
-const ROM_END = 0x7FFF;
-const BYTE_RANGE_END = 0xFF;
-const MAX_ADDR = 0xFFFF; // 16-bit address space
+const ROM_END = 0x7fff;
+const BYTE_RANGE_END = 0xff;
+const MAX_ADDR = 0xffff; // 16-bit address space
 const MAX_ROM_SIZE = 0x8000; // 32KB for Game
-const ERAM_START = 0xA000;
-const ERAM_END = 0xBFFF;
+const ERAM_START = 0xa000;
+const ERAM_END = 0xbfff;
 
 /**
  * Cartridge class to handle Game
@@ -14,52 +13,51 @@ const ERAM_END = 0xBFFF;
  */
 
 class Cartridge {
-    rom: Uint8Array;
-    addressable: number;
+  rom: Uint8Array;
+  addressable: number;
 
-    constructor(buffer: ArrayBuffer){
-        this.rom = new Uint8Array(buffer);
-        this.addressable = Math.min(ROM_END, this.rom.length - 1);
-    }
-
-    readAbs(addr: number): number {
-        if(!Number.isInteger(addr)) {
-            throw new TypeError("Address must be an integer");
-        }
-
-        // rango de 16 bits del bus
-  if (addr < 0 || addr > MAX_ADDR) {
-    throw new RangeError('Address must be between 0x0000 and 0xFFFF');
+  constructor(buffer: ArrayBuffer) {
+    this.rom = new Uint8Array(buffer);
+    this.addressable = Math.min(ROM_END, this.rom.length - 1);
   }
 
-        // rango atendido por este cartucho (ROM visible)
-  if (addr < ROM_START || addr > this.addressable) {
-    throw new RangeError(`Address out of ROM bounds: 0x${addr.toString(16)}`);
-  }
-        return this.rom[addr];
+  readAbs(addr: number): number {
+    if (!Number.isInteger(addr)) {
+      throw new TypeError('Address must be an integer');
     }
 
-    writeAbs(addr: number, value: number): void {
-          if (!Number.isInteger(addr) || addr < 0 || addr > MAX_ADDR) {
-    throw new RangeError('Address must be between 0x0000 and 0xFFFF');
-  }
-  // ROM es inmutable en el Paso 1
-  if (addr >= ROM_START && addr <= this.addressable) {
-    throw new Error('Write to ROM is not allowed');
-  }
-  // fuera de rango del cartucho (ERAM/MBC aún no implementados)
-  throw new RangeError('Address out of cartridge range');
-       
+    // rango de 16 bits del bus
+    if (addr < 0 || addr > MAX_ADDR) {
+      throw new RangeError('Address must be between 0x0000 and 0xFFFF');
     }
 
-    getRomSize(): number {
-        return this.rom.length;
+    // rango atendido por este cartucho (ROM visible)
+    if (addr < ROM_START || addr > this.addressable) {
+      throw new RangeError(`Address out of ROM bounds: 0x${addr.toString(16)}`);
     }
+    return this.rom[addr];
+  }
 
-    dispose(): void {
-        this.rom = new Uint8Array(0); // Clear the ROM data
-        this.addressable = -1; // Reset addressable range
+  writeAbs(addr: number, value: number): void {
+    if (!Number.isInteger(addr) || addr < 0 || addr > MAX_ADDR) {
+      throw new RangeError('Address must be between 0x0000 and 0xFFFF');
     }
+    // ROM es inmutable en el Paso 1
+    if (addr >= ROM_START && addr <= this.addressable) {
+      throw new Error('Write to ROM is not allowed');
+    }
+    // fuera de rango del cartucho (ERAM/MBC aún no implementados)
+    throw new RangeError('Address out of cartridge range');
+  }
+
+  getRomSize(): number {
+    return this.rom.length;
+  }
+
+  dispose(): void {
+    this.rom = new Uint8Array(0); // Clear the ROM data
+    this.addressable = -1; // Reset addressable range
+  }
 }
 
 export default Cartridge;

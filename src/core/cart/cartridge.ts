@@ -17,6 +17,9 @@ class Cartridge {
   addressable: number;
 
   constructor(buffer: ArrayBuffer) {
+    if (buffer.byteLength < 16) {
+      throw new RangeError('ROM must be at least 16 bytes');
+    }
     this.rom = new Uint8Array(buffer);
     this.addressable = Math.min(ROM_END, this.rom.length - 1);
   }

@@ -20,6 +20,42 @@ describe('Cartridge', () => {
     const cart = new Cartridge(buf.buffer);
     expect(cart.readAbs(0x7fff)).toBe(0xaa);
   });
-});
 
-// We recommend installing an extension to run vitest tests.
+  it('should throw on reading out of bounds', () => {
+    const buffer = makeBuffer(0x8000);
+    const cartridge = new Cartridge(buffer);
+    expect(() => cartridge.readAbs(0x8000)).toThrow(RangeError);
+    expect(() => cartridge.readAbs(-1)).toThrow(RangeError);
+  });
+
+  it('should throw an error for ROMS smaller than 16 bytes', () => {
+    const buffer = makeBuffer(15);
+    expect(() => new Cartridge(buffer)).toThrow(RangeError);
+  });
+
+  it('should throw an error then addr is not an integer', () => {
+    const buffer = makeBuffer(0x8000);
+    const cartridge = new Cartridge(buffer);
+    expect(() => cartridge.readAbs(0.5)).toThrow(TypeError);
+  });
+
+  it('should throw an error when writing to ROM', () => {
+    const buffer = makeBuffer(0x8000);
+    const cartridge = new Cartridge(buffer);
+    expect(() => cartridge.writeAbs(0x0000, 0xff)).toThrow(Error);
+  });
+
+  it('should retunr buffer.byteLength for getRomSize()', () => {
+    const buffer = makeBuffer(0x8000);
+    const cartridge = new Cartridge(buffer);
+    expect(cartridge.getRomSize()).toBe(0x8000);
+  });
+
+  it('should clean up resources on dispose()', () => {
+    const buffer = makeBuffer(0x8000);
+    const cartridge = new Cartridge(buffer);
+    expect(() => cartridge.dispose()).not.toThrow();
+    expect(cartridge.rom).toBeDefined();
+    expect(cartridge.addressable).toBeDefined();
+  });
+});

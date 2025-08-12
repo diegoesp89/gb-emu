@@ -10,7 +10,7 @@ const RAM_SIZE_OFFSET = 0x149;
 const HEADER_CHECKSUM_OFFSET = 0x14d;
 const HEADER_CHECKSUM_START = 0x134;
 const HEADER_CHECKSUM_END = 0x14c;
-const MAX_ADDR = 0xffff;
+const MAX_ADDR = 0xff;
 const MAX_BYTES_TITLE_CGB = 11;
 const MAX_BYTES_TITLE_NON_CGB = 16;
 const MINIMUM_ROM_SIZE = 0x150; // 16 bytes minimum for a valid ROM
@@ -18,7 +18,7 @@ const MINIMUM_ROM_SIZE = 0x150; // 16 bytes minimum for a valid ROM
 export function calculateHeaderChecksum(rom: Uint8Array): number {
   let checksum = 0;
   for (let i = HEADER_CHECKSUM_START; i < HEADER_CHECKSUM_END; i++) {
-    checksum = (checksum - rom[i] - 1) & 0xff; // 8-bit wrap-around
+    checksum = (checksum - rom[i] - 1) & MAX_ADDR; // 8-bit wrap-around
   }
   return checksum;
 }

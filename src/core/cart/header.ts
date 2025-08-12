@@ -2,9 +2,8 @@ import type { CartridgeInfo } from './types';
 import type { CartridgeType } from './types';
 
 const TITLE_OFFSET_START = 0x134;
-const TITLE_OFFSET_END = 0x143;
-const CBG_FLAG_OFFSET = 0x146;
-const SBG_FLAG_OFFSET = 0x147;
+const CGB_FLAG_OFFSET = 0x143;
+const SGB_FLAG_OFFSET = 0x146;
 const CARTRIDGE_TYPE_OFFSET = 0x147;
 const ROM_SIZE_OFFSET = 0x148;
 const RAM_SIZE_OFFSET = 0x149;
@@ -12,14 +11,30 @@ const HEADER_CHECKSUM_OFFSET = 0x14d;
 const HEADER_CHECKSUM_START = 0x134;
 const HEADER_CHECKSUM_END = 0x14c;
 const MAX_ADDR = 0xffff;
+const MAX_BYTES_TITLE_CGB = 11;
+const MAX_BYTES_TITLE_NON_CGB = 16;
 const MINIMUM_ROM_SIZE = 0x150; // 16 bytes minimum for a valid ROM
 
 export function calculateHeaderChecksum(rom: Uint8Array): number {
   let checksum = 0;
   for (let i = HEADER_CHECKSUM_START; i < HEADER_CHECKSUM_END; i++) {
-    checksum = (checksum - rom[i]) & MAX_ADDR;
+    checksum = (checksum - rom[i] - 1) & 0xff; // 8-bit wrap-around
   }
   return checksum;
+}
+
+export function getTitle(rom: Uint8Array, cgbFlag: number): string {
+  const max = (cgbFlag & 0x80) !== 0 ? MAX_BYTES_TITLE_CGB : MAX_BYTES_TITLE_NON_CGB;
+
+  const start = TITLE_OFFSET_START;
+  const stop = start + max;
+
+  let end = start;
+  while (end < stop && rom[end] !== 0x00) end++;
+
+  const bytes = rom.subarray(start, end);
+  // ASCII basta; utf-8 también funciona para 0..0x7F
+  return new TextDecoder().decode(bytes).trimEnd();
 }
 
 function getCartridgeType(type: number): CartridgeType {
@@ -119,15 +134,15 @@ function getRamBanks(ramSizeCode: number): number {
     case 0x00:
       return 0; // No RAM
     case 0x01:
-      return 1; // 2Kb UNUSED
+      return 1; // 2 KiB (especial)
     case 0x02:
-      return 1; // 8KB
+      return 1; // 8 KiB
     case 0x03:
-      return 4; // 32KB
+      return 4; // 32 KiB
     case 0x04:
-      return 16; // 64KB
+      return 16; // 128 KiB
     case 0x05:
-      return 8; // 128KB
+      return 8; // 64 KiB
     default:
       throw new Error(`Unknown RAM size code: ${ramSizeCode}`);
   }
@@ -137,12 +152,12 @@ export function parseHeader(rom: Uint8Array): CartridgeInfo {
     throw new RangeError('ROM must be at least 16 bytes');
   }
 
-  const title = new TextDecoder().decode(rom.slice(TITLE_OFFSET_START, TITLE_OFFSET_END)).trim();
   const type = rom[CARTRIDGE_TYPE_OFFSET];
   const romSizeCode = rom[ROM_SIZE_OFFSET];
   const ramSizeCode = rom[RAM_SIZE_OFFSET];
-  const cbgFlags = rom[CBG_FLAG_OFFSET];
-  const sgbFlags = rom[SBG_FLAG_OFFSET];
+  const cbgFlags = rom[CGB_FLAG_OFFSET];
+  const sgbFlags = rom[SGB_FLAG_OFFSET];
+  const title = getTitle(rom, cbgFlags);
   const headerChecksumOK = rom[HEADER_CHECKSUM_OFFSET] === calculateHeaderChecksum(rom);
 
   return {

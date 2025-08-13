@@ -33,7 +33,7 @@ export function getTitle(rom: Uint8Array, cgbFlag: number): string {
   while (end < stop && rom[end] !== 0x00) end++;
 
   const bytes = rom.subarray(start, end);
-  // ASCII basta; utf-8 también funciona para 0..0x7F
+  // ASCII ; utf-8 works also for 0..0x7F
   return new TextDecoder().decode(bytes).trimEnd();
 }
 

@@ -30,12 +30,10 @@ class Cartridge {
       throw new TypeError('Address must be an integer');
     }
 
-    // rango de 16 bits del bus
     if (addr < 0 || addr > MAX_ADDR) {
       throw new RangeError('Address must be between 0x0000 and 0xFFFF');
     }
 
-    // rango atendido por este cartucho (ROM visible)
     if (addr < ROM_START || addr > this.addressable) {
       throw new RangeError(`Address out of ROM bounds: 0x${addr.toString(16)}`);
     }
@@ -46,11 +44,9 @@ class Cartridge {
     if (!Number.isInteger(addr) || addr < 0 || addr > MAX_ADDR) {
       throw new RangeError('Address must be between 0x0000 and 0xFFFF');
     }
-    // ROM es inmutable en el Paso 1
     if (addr >= ROM_START && addr <= this.addressable) {
       throw new Error('Write to ROM is not allowed');
     }
-    // fuera de rango del cartucho (ERAM/MBC aún no implementados)
     throw new RangeError('Address out of cartridge range');
   }
 

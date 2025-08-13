@@ -6,19 +6,15 @@ describe('Cartridge Header', () => {
 
   beforeEach(() => {
     rom.fill(0);
-    // Title placeholder (se sobreescribe en el test)
     rom[0x134] = 0x00;
 
-    // Flags por defecto
     rom[0x143] = 0x00; // CGB flag
     rom[0x146] = 0x00; // SGB flag
 
-    // Type/size por defecto
     rom[0x147] = 0x00; // Cartridge type
     rom[0x148] = 0x00; // ROM size code (32 KiB)
     rom[0x149] = 0x00; // RAM size code (sin RAM)
 
-    // El checksum se setea al final del test
     rom[0x14d] = 0x00;
   });
 

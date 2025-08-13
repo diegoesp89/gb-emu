@@ -1,102 +1,102 @@
 # Game Boy Emulator (JS/TS · Web)
 
-Emulador de **Game Boy (DMG)** hecho en **TypeScript**, renderizado en **Canvas 2D** y con **Chrome DevTools** como debugger/terminal (exponiendo un objeto `window.gb`). La idea es mantener un stack mínimo, modular y fácil de iterar.
+**Game Boy (DMG)** emulator built in **TypeScript**, rendered with **Canvas 2D**, and using **Chrome DevTools** as a debugger/terminal (exposing a `window.gb` object). The goal is to keep the stack minimal, modular, and easy to iterate on.
 
 ---
 
-## ✨ Características (MVP)
+## ✨ Features (MVP)
 
-- **CPU SM83** (fetch–decode–execute, flags, interrupciones).
-- **MMU** (mapa de memoria, DMA, MBC1 primero).
-- **PPU** (modos 0–3, LY/STAT, tiles/sprites, paletas DMG) → Canvas 160×144.
+- **CPU SM83** (fetch–decode–execute, flags, interrupts).
+- **MMU** (memory map, DMA, MBC1 first).
+- **PPU** (modes 0–3, LY/STAT, tiles/sprites, DMG palettes) → Canvas 160×144.
 - **Timers** (DIV/TIMA/TMA/TAC).
-- **Input** (matriz de joypad).
-- **Loop** estable ~59.7275 FPS (≈ **70 224** ciclos/frame).
-- **Debug por consola**: `window.gb.*` (cargar ROM, step, pause, logs).
-- **Sin sonido** al inicio (APU más adelante).
+- **Input** (joypad matrix).
+- **Stable loop** ~59.7275 FPS (≈ **70,224** cycles/frame).
+- **Console debugging**: `window.gb.*` (load ROM, step, pause, logs).
+- **No sound** initially (APU later).
 
 ---
 
 ## 🧱 Stack
 
-- **TypeScript + Vite** (dev server rápido, HMR, ES modules).
-- **Canvas 2D** (ImageData + `putImageData` para empezar).
-- **Web Worker** para el core (no bloquear la UI).
-- **Web Audio API** (cuando haya soporte para APU).
+- **TypeScript + Vite** (fast dev server, HMR, ES modules).
+- **Canvas 2D** (ImageData + `putImageData` to start).
+- **Web Worker** for the core (avoid blocking UI).
+- **Web Audio API** (when APU is implemented).
 - **ESLint 9 (flat config) + Prettier**.
-- **Husky + lint-staged** (hook `pre-commit`).
-- **Vitest** (tests unitarios / TDD).
+- **Husky + lint-staged** (`pre-commit` hook).
+- **Vitest** (unit tests / TDD).
 
 ---
 
-## ✅ Flujo de trabajo con TDD (recomendado)
+## ✅ Recommended TDD Workflow
 
-Aplicar **TDD primero** a lo determinístico: CPU, MMU y Timers. PPU/APU pueden ir después o con tests de mayor grano.
+Apply **TDD first** to deterministic parts: CPU, MMU, and Timers. PPU/APU can come later or with higher-level tests.
 
-**Primeros pasos TDD**
+**First TDD steps**
 
-- [ ] Configurar `vitest` y `tests/helpers` (sin implementar el emu).
-- [ ] Factories de prueba: `makeCPU()`, `makeMMU()`, cartucho “fake”.
-- [ ] Tabla de vectores de opcodes (inputs/expecteds) en JSON.
-- [ ] Matchers de flags (Z, N, H, C) y conteo de ciclos.
-- [ ] Timers: pruebas de frecuencia/overflow → IRQ.
-- [ ] PPU: empezar testeando **modos** y **LY** (no píxel perfecto).
-- [ ] E2E mínimo: boot sin BIOS, avanzar N frames y comparar **hash** de framebuffer.
+- [ ] Configure `vitest` and `tests/helpers` (without implementing the emulator).
+- [ ] Test factories: `makeCPU()`, `makeMMU()`, fake cartridge.
+- [ ] Opcode vector table (inputs/expecteds) in JSON.
+- [ ] Flag matchers (Z, N, H, C) and cycle counting.
+- [ ] Timers: frequency/overflow tests → IRQ.
+- [ ] PPU: start testing **modes** and **LY** (not pixel-perfect yet).
+- [ ] Minimal E2E: boot without BIOS, advance N frames, compare **framebuffer hash**.
 
 ---
 
-## 🧩 Contratos entre módulos (idea)
+## 🧩 Module Contracts (concept)
 
 - **Bus**: `read(addr): byte`, `write(addr, byte)`.
 - **Clock**: `tick(cycles)`.
 - **IRQ**: `raise(type)`, `ack(type)`.
-- **PPU**: `step(cycles)` → escribe en framebuffer.
-- **Timers**: `step(cycles)` → dispara interrupciones.
-- **Scheduler**: orquesta CPU/PPU/Timers por ciclos.
+- **PPU**: `step(cycles)` → writes to framebuffer.
+- **Timers**: `step(cycles)` → triggers interrupts.
+- **Scheduler**: orchestrates CPU/PPU/Timers by cycles.
 
 ---
 
-## 🧵 Arquitectura de ejecución (2 hilos)
+## 🧵 Execution Architecture (2 threads)
 
 ### Main thread (UI)
 
-- Canvas 2D (pinta por **frame** o **scanline**).
-- Input (teclado → estado de joypad).
+- Canvas 2D (draw per **frame** or **scanline**).
+- Input (keyboard → joypad state).
 - Debug/terminal (`window.gb`).
 
 ### Web Worker (Core)
 
 - CPU/MMU/PPU/Timers/IRQ.
-- Bucle por ciclos (≈ **70 224** ciclos/frame).
-- `postMessage` con framebuffer e info de estado.
+- Cycle-based loop (≈ **70,224** cycles/frame).
+- `postMessage` with framebuffer and state info.
 
 ---
 
 ## 🧪 Testing
 
 - **Unit**: opcodes, timers, MMU (table-driven tests).
-- **E2E**: cargar una ROM, simular X frames, snapshot/hash del canvas.
+- **E2E**: load a ROM, simulate X frames, snapshot/framebuffer hash.
 
 ---
 
-## 🛠️ Comandos `window.gb` (API de consola)
+## 🛠️ `window.gb` Console Commands (API)
 
-> Solo la **superficie**:
+> Just the **surface**:
 
 - `gb.loadROM(file | Uint8Array)`
 - `gb.reset()`
 - `gb.run()` / `gb.pause()`
-- `gb.step(n = 1)` → avanza N instrucciones
+- `gb.step(n = 1)` → advances N instructions
 - `gb.peek(addr, len = 1)` / `gb.poke(addr, value)`
 - `gb.setBreakpoint(pc)` / `gb.clearBreakpoints()`
 - `gb.watch(addr)` / `gb.unwatch(addr)`
-- `gb.logs(n = 50)` → ring buffer de trace
+- `gb.logs(n = 50)` → trace ring buffer
 
 ---
 
-## ⌨️ Controles (sugeridos, mapeo inicial)
+## ⌨️ Controls (suggested initial mapping)
 
-- **D-Pad**: Flechas
+- **D-Pad**: Arrow keys
 - **A**: Z
 - **B**: X
 - **Start**: Enter
@@ -104,81 +104,81 @@ Aplicar **TDD primero** a lo determinístico: CPU, MMU y Timers. PPU/APU pueden 
 
 ---
 
-## 📂 Estructura del proyecto
+## 📂 Project Structure
 
 ```
 src/
-  core/             # Núcleo de la emulación
-    cpu/            # SM83: opcodes, registros, interrupciones
-    mmu/            # Mapa de memoria, DMA, MBCs, I/O
-    ppu/            # Gráficos: tiles/sprites, modos, paletas
-    apu/            # Audio (llegará después)
-    timers/         # DIV/TIMA/TMA/TAC y su avance por ciclos
-    scheduler/      # Ordena la ejecución por ciclos/frame
-    cart/           # Carga de cartuchos y MBCs
-    input/          # Estado de joypad y lectura desde MMU
-  debug/            # Herramientas de debugging
-    trace/          # Trazas de instrucciones/ciclos
+  core/             # Emulation core
+    cpu/            # SM83: opcodes, registers, interrupts
+    mmu/            # Memory map, DMA, MBCs, I/O
+    ppu/            # Graphics: tiles/sprites, modes, palettes
+    apu/            # Audio (later)
+    timers/         # DIV/TIMA/TMA/TAC and cycle advancement
+    scheduler/      # Orchestrates execution per cycle/frame
+    cart/           # Cartridge loading and MBCs
+    input/          # Joypad state and MMU reads
+  debug/            # Debugging tools
+    trace/          # Instruction/cycle traces
     breakpoints/    # Breakpoints / watchpoints
-    disassembler/   # Desensamblador (opcional)
-    logger/         # Logger y ring buffers
-  ui/               # Capa de interfaz
-    canvas/         # Render a 160×144 (ImageData)
-    overlay/        # HUD: FPS, LY, modo PPU, etc.
-    input/          # Listeners de teclado y mapping
-  worker/           # Código del Web Worker (core)
-public/             # Estáticos públicos (index.html, iconos)
-roms/               # ROMs locales (no versionar)
+    disassembler/   # Disassembler (optional)
+    logger/         # Logger and ring buffers
+  ui/               # UI layer
+    canvas/         # Render to 160×144 (ImageData)
+    overlay/        # HUD: FPS, LY, PPU mode, etc.
+    input/          # Keyboard listeners and mapping
+  worker/           # Web Worker code (core)
+public/             # Public static files (index.html, icons)
+roms/               # Local ROMs (do not version)
 tests/
   unit/             # Unit tests (CPU, MMU, timers…)
-  e2e/              # End-to-end (frames, hashes de framebuffer)
-scripts/            # Scripts utilitarios (p. ej., generación de estructura)
+  e2e/              # End-to-end (frames, framebuffer hashes)
+scripts/            # Utility scripts (e.g., structure generation)
 ```
 
-> Sugerencia: mantener `.gitkeep` en carpetas vacías y **no** versionar `roms/`.
+> Suggestion: keep `.gitkeep` in empty folders and **do not** version `roms/`.
 
 ---
 
 ## 🧭 Roadmap
 
-- [ ] **TDD harness listo** (Vitest + helpers + fixtures).
-- [ ] CPU + MMU + Timers (con TDD).
-- [ ] PPU: background/tiles → sprites (tests de modo/LY; luego visuales).
-- [ ] Boot sin BIOS (registro inicial parcheado).
-- [ ] MBC1 (ROMs simples).
-- [ ] Input + primer juego “jugable”.
-- [ ] Loop ~60 FPS estable.
-- [ ] Guardado rápido (snapshots en IndexedDB).
-- [ ] APU (canales 1–4 con Web Audio API).
-- [ ] Disassembler + trace selectivo.
-- [ ] Documentar API `window.gb` y ejemplos en consola.
+- [ ] **TDD harness ready** (Vitest + helpers + fixtures).
+- [ ] CPU + MMU + Timers (with TDD).
+- [ ] PPU: background/tiles → sprites (mode/LY tests; then visuals).
+- [ ] Boot without BIOS (patched initial registers).
+- [ ] MBC1 (simple ROMs).
+- [ ] Input + first “playable” game.
+- [ ] Stable ~60 FPS loop.
+- [ ] Quick save (snapshots in IndexedDB).
+- [ ] APU (channels 1–4 with Web Audio API).
+- [ ] Disassembler + selective trace.
+- [ ] Document `window.gb` API and console examples.
 
 ---
 
-## 🧰 Rendimiento (reglas de oro)
+## 🧰 Performance (golden rules)
 
-- **TypedArrays** para RAM/VRAM/OAM.
-- Tabla de handlers por opcode (evitar `switch` profundo).
-- Pintar con **ImageData** al principio; optimizar luego.
-- Medir con **Performance** en DevTools (stutter/leaks).
-
----
-
-## 🧹 Calidad de código
-
-- **Pre-commit (Husky)**: `eslint --fix` y `prettier` (vía lint-staged).
-- **Commit-msg**: desactivado (sin commitlint por ahora).
-- **Sugerencia**: `engines` en `package.json` para forzar Node 20.
+- **TypedArrays** for RAM/VRAM/OAM.
+- Opcode handler table (avoid deep `switch`).
+- Start rendering with **ImageData**; optimize later.
+- Measure with **Performance** in DevTools (stutter/leaks).
 
 ---
 
-## 📝 Licencia
+## 🧹 Code Quality
 
-No hay licencia xD
+- **Pre-commit (Husky)**: `eslint --fix` and `prettier` (via lint-staged).
+- **Commit-msg**: disabled (no commitlint for now).
+- **Suggestion**: `engines` in `package.json` to enforce Node 20.
 
 ---
 
-## 📚 Créditos / Lecturas
+## 📝 License
+
+No license xD
+
+---
+
+## 📚 Credits / Reading
 
 - [Pan Docs (Game Boy)](https://gbdev.io/pandocs/)
 - [ESLint 9: Flat Config](https://eslint.org/docs/latest/use/configure/configuration-files-new)

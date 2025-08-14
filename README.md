@@ -35,7 +35,7 @@ Apply **TDD first** to deterministic parts: CPU, MMU, and Timers. PPU/APU can co
 
 **First TDD steps**
 
-- [ ] Configure `vitest` and `tests/helpers` (without implementing the emulator).
+- [X] Configure `vitest` and `tests/helpers` (without implementing the emulator).
 - [ ] Test factories: `makeCPU()`, `makeMMU()`, fake cartridge.
 - [ ] Opcode vector table (inputs/expecteds) in JSON.
 - [ ] Flag matchers (Z, N, H, C) and cycle counting.
@@ -141,7 +141,7 @@ scripts/            # Utility scripts (e.g., structure generation)
 
 ## 🧭 Roadmap
 
-- [ ] **TDD harness ready** (Vitest + helpers + fixtures).
+- [X] **TDD harness ready** (Vitest + helpers + fixtures).
 - [ ] CPU + MMU + Timers (with TDD).
 - [ ] PPU: background/tiles → sprites (mode/LY tests; then visuals).
 - [ ] Boot without BIOS (patched initial registers).

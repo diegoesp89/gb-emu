@@ -33,8 +33,8 @@ export interface CartridgeInfo {
   type: CartridgeType;
   romBanks: number;
   ramBanks: number;
-  cbgFlags: number;
-  sgbFlags: number;
+  cgbFlag: number;
+  sgbFlag: number;
   headerChecksumOK: boolean;
   romSizeCode: number;
   ramSizeCode: number;

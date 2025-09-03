@@ -17,7 +17,7 @@ class MMU {
 
   read8(addr: number): number {
     // Validate 16-bit address
-    if (!Number.isInteger(addr) || addr < 0 || addr > 0xffff) {
+    if (!Number.isInteger(addr) || addr < ROM_START || addr > ROM_END) {
       throw new RangeError(`Invalid address: 0x${addr.toString(16)}`);
     }
 
@@ -42,7 +42,7 @@ class MMU {
     }
 
     // IE register 0xFFFF
-    if (addr === 0xffff) {
+    if (addr === ROM_END) {
       return this.ie & 0xff;
     }
 
@@ -84,7 +84,7 @@ class MMU {
     }
 
     // IE register 0xFFFF
-    if (addr === 0xffff) {
+    if (addr === ROM_END) {
       this.ie = value;
       return;
     }

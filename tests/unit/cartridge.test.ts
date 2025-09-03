@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import Cartridge from '../../src/core/cart/cartridge';
+import { makeROM32KiB } from '../helpers/makeROM32KiB';
 
 function makeBuffer(length: number, fill: number = 0): ArrayBuffer {
   const arr = new Uint8Array(length);
@@ -9,7 +10,7 @@ function makeBuffer(length: number, fill: number = 0): ArrayBuffer {
 
 describe('Cartridge', () => {
   it('should read the first byte of ROM', () => {
-    const buffer = makeBuffer(0x8000, 0xff);
+    const buffer = makeROM32KiB(0xff); // fill con 0xFF para que [0x0000] sea 0xFF
     const cartridge = new Cartridge(buffer);
     expect(cartridge.readAbs(0x0000)).toBe(0xff);
   });

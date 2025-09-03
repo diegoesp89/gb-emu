@@ -30,7 +30,9 @@ export function getTitle(rom: Uint8Array, cgbFlag: number): string {
   const stop = start + max;
 
   let end = start;
-  while (end < stop && rom[end] !== 0x00) end++;
+  while (end < stop && rom[end] !== 0x00) {
+    end++;
+  }
 
   const bytes = rom.subarray(start, end);
   // ASCII ; utf-8 works also for 0..0x7F
@@ -155,9 +157,9 @@ export function parseHeader(rom: Uint8Array): CartridgeInfo {
   const type = rom[CARTRIDGE_TYPE_OFFSET];
   const romSizeCode = rom[ROM_SIZE_OFFSET];
   const ramSizeCode = rom[RAM_SIZE_OFFSET];
-  const cbgFlags = rom[CGB_FLAG_OFFSET];
-  const sgbFlags = rom[SGB_FLAG_OFFSET];
-  const title = getTitle(rom, cbgFlags);
+  const cgbFlag = rom[CGB_FLAG_OFFSET];
+  const sgbFlag = rom[SGB_FLAG_OFFSET];
+  const title = getTitle(rom, cgbFlag);
   const headerChecksumOK = rom[HEADER_CHECKSUM_OFFSET] === calculateHeaderChecksum(rom);
 
   return {
@@ -165,8 +167,8 @@ export function parseHeader(rom: Uint8Array): CartridgeInfo {
     type: getCartridgeType(type),
     romBanks: getRomBanks(romSizeCode),
     ramBanks: getRamBanks(ramSizeCode),
-    cbgFlags,
-    sgbFlags,
+    cgbFlag,
+    sgbFlag,
     headerChecksumOK,
     romSizeCode,
     ramSizeCode,
